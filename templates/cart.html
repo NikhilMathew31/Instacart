@@ -1,0 +1,96 @@
+{% extends 'layout.html' %}
+{% block body %}
+
+<div class="section">
+    <div class="card">
+        {% if products %}
+
+
+        {% for product in products %}
+        <div class="cart-item">
+
+            <div class="cart-desc">
+
+                <div class="product-image">
+                    <img src="{{ url_for('static', filename=product['image']) }}" alt="{{ product['name'] }}">
+                </div>
+
+                <div class="cart">
+                    <h3 class="name">{{ product['name'] }}</h3>
+                    <p>{{ product['price'] }}₹ / {{ product['weight'] }}</p>
+                </div>
+
+            </div>
+
+            <div class="cart-desc">
+
+                <div class="quantity-container">
+                    <a href="{{ url_for('update_cart_quantity', product_id=product._id) }}?change=-1"
+                        class="quantity-button">
+                        <i class="fa-solid fa-minus"></i>
+                    </a>
+                    <p>{{ product.quantity }}</p>
+                    <a href="{{ url_for('update_cart_quantity', product_id=product._id) }}?change=1"
+                        class="quantity-button">
+                        <i class="fa-solid fa-plus"></i>
+                    </a>
+
+                </div>
+
+
+                <p>₹{{ product.total }}</p>
+
+            </div>
+
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="card">
+        <h1> Bill Details </h1>
+
+        <div class="details">
+            <p>MRP Total</p>
+            <p>₹{{ total_price }}</p>
+        </div>
+
+        <div class="details">
+            <p>Handling Fee</p>
+            <p>₹5</p>
+        </div>
+
+        <div class="details">
+            <p>Delivery Partner Fee</p>
+            <p>₹16</p>
+        </div>
+
+        <hr style="border-top: 1px dashed;" />
+        <div class="details">
+            <p>To Pay</p>
+            <p>₹{{ pay_amt }}</p>
+        </div>
+
+    </div>
+
+    <div class="card">
+        <h1>Delivery Details</h1>
+        <form method="POST" action="{{ url_for('place_order') }}">
+
+            <div class="input-form">
+                <input type="text" class="input-field" id="house" placeholder="House / Flat / Block No. *" required>
+
+                <input type="text" class="input-field" id="area" placeholder="Apartment / Road / Area *" required>
+            </div>
+
+            <button type="submit" class="login-btn">Checkout</button>
+        </form>
+    </div>
+</div>
+
+
+
+{% else %}
+<p>Your cart is empty.</p>
+{% endif %}
+
+{% endblock %}

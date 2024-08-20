@@ -1,0 +1,119 @@
+{% extends 'layout.html' %}
+{% block body %}
+
+<div class="search">
+  <input type="text" class="searchTerm" id="myInput" placeholder='Search "Apple"'>
+  <i class="fa fa-search"></i>
+</div>
+
+<div id="notFoundMessage" style="display: none; text-align: center; color: darkred; margin-top: 20px;">
+  No products found.
+</div>
+
+<div class="product-list">
+  {% for product in products %}
+  <div class="product-item" data-product-id="{{ product._id }}">
+    <div class="product">
+      <div class="product-image">
+        <img src="{{ url_for('static', filename=product['image']) }}" alt="{{ product['name'] }}">
+      </div>
+
+      <div class="product-desc">
+        <h3 class="name">{{ product['name'] }}</h3>
+        <p class="p-desc">{{ product['description'] }}</p>
+        <p>{{ product['price'] }}₹ / {{ product['weight'] }}</p>
+      </div>
+    </div>
+
+    {% if product.in_cart %}
+    <div class="quantity-container-home">
+      <a href="{{ url_for('update_cart_quantity', product_id=product._id) }}?change=-1" class="quantity-button-home">
+        <i class="fa-solid fa-minus"></i>
+      </a>
+      <p class="quantity-value">{{ product.quantity }}</p>
+      <a href="{{ url_for('update_cart_quantity', product_id=product._id) }}?change=1" class="quantity-button-home">
+        <i class="fa-solid fa-plus"></i>
+      </a>
+    </div>
+    {% else %}
+    <div class="add-btn">
+      <a href="#" class="add-button" onclick="addToCart('{{ product._id }}', this)">
+        Add
+        <i class="fa-solid fa-plus"></i>
+      </a>
+    </div>
+    {% endif %}
+
+  </div>
+  {% endfor %}
+</div>
+
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+
+    const searchInput = document.getElementById('myInput');
+    const productItems = document.querySelectorAll('.product-item');
+    const notFoundMessage = document.getElementById('notFoundMessage');
+
+    searchInput.addEventListener('keyup', function () {
+      const searchTerm = searchInput.value.toLowerCase();
+      let productFound = false;
+
+      productItems.forEach(item => {
+        const productName = item.querySelector('.name').textContent.toLowerCase();
+
+        if (productName.includes(searchTerm)) {
+          item.style.display = '';
+          productFound = true;
+        } else {
+          item.style.display = 'none';
+        }
+      });
+
+
+      if (!productFound) {
+        notFoundMessage.style.display = 'block';
+      } else {
+        notFoundMessage.style.display = 'none';
+      }
+    });
+
+  });
+</script>
+
+<script>
+  function addToCart(productId, element) {
+    fetch(`/update_cart_quantity/${productId}?change=1`)
+      .then(response => {
+        if (response.ok) {
+          window.location.reload();
+        }
+      });
+  }
+
+  function updateQuantity(element, change) {
+    const productId = element.closest('.product-item').getAttribute('data-product-id');
+    fetch(`/update_cart_quantity/${productId}?change=${change}`)
+      .then(response => {
+        if (response.ok) {
+          window.location.reload();
+        }
+      });
+  }
+
+  function removeFromCart(element) {
+    const productId = element.closest('.product-item').getAttribute('data-product-id');
+    fetch(`/update_cart_quantity/${productId}?change=-1`)
+      .then(response => {
+        if (response.ok) {
+          window.location.reload();
+        }
+      });
+  }
+
+</script>
+
+
+
+{% endblock %}

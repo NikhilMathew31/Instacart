@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Almarai:wght@300;400;700;800&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap"
+    rel="stylesheet">
+
+  <link href="static/css/style.css" rel="stylesheet">
+
+  <title>Instacart</title>
+</head>
+
+<body>
+
+  <div class="nav">
+    <div class="logo">
+      <a href="{{ url_for('home') }}">
+        <img src="static/images/logo.png" alt="logo">
+        <h1>Instacart</h1>
+      </a>
+    </div>
+    <div class="nav-links">
+      <div class="cart-icon">
+        <a href="{{ url_for('cart') }}">
+          <i class="fa-solid fa-cart-shopping"></i>
+          <span id="cart-counter" class="cart-counter">
+            {{ cart_count }}
+          </span>
+        </a>
+      </div>
+
+      <div class="dropdown">
+        <i class="fa-solid fa-user"></i>
+        <div class="dropdown-content">
+          <h3 style="text-align: center;">Account</h3>
+          <p style="margin-bottom: 20px; text-align: center;">{{ username }} </p>
+          <form method="POST" action="{{ url_for('logout') }}">
+            <button type="submit" class="login-btn" id="loginBtn">Logout</button>
+          </form>
+
+        </div>
+      </div>
+      <!-- <a href="{{ url_for('logout') }}" class="login-btn"><i class="fa-solid fa-user"></i></a> -->
+
+    </div>
+  </div>
+
+  {% block body %} {% endblock %}
+
+  {% for category, message in get_flashed_messages(with_categories=True) %}
+  <div class="alert alert-{{category}}">{{ message }}</div>
+  {% endfor %}
+
+</body>
+
+</html>
