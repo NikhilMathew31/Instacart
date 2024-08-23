@@ -89,9 +89,13 @@ def update_cart_quantity(product_id):
         new_quantity = cart['quantity'] + change
         if new_quantity > 0:
             mongo.db.carts.update_one({'_id': cart['_id']}, {'$set': {'quantity': new_quantity}})
+            return jsonify({'success': True, 'quantity': new_quantity}), 200
+        
         else:
             mongo.db.carts.delete_one({'_id': cart['_id']})
             flash('Product removed from cart.', 'error')
+            return jsonify({'success': True, 'quantity': 0, 'removed': True}), 200
+        
     else:
         if change > 0:
             mongo.db.carts.insert_one({
@@ -100,8 +104,9 @@ def update_cart_quantity(product_id):
                 'quantity': change
             })
             flash('Product added to cart.', 'info')
-    
-    return redirect(request.referrer)
+            return jsonify({'success': True, 'quantity': change}), 200
+
+    return jsonify({'success': False}), 400
 
 @app.route('/cart')
 def cart():

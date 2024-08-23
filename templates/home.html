@@ -27,22 +27,28 @@
 
     {% if product.in_cart %}
     <div class="quantity-container-home">
-      <a href="{{ url_for('update_cart_quantity', product_id=product._id) }}?change=-1" class="quantity-button-home">
-        <i class="fa-solid fa-minus"></i>
-      </a>
-      <p class="quantity-value">{{ product.quantity }}</p>
-      <a href="{{ url_for('update_cart_quantity', product_id=product._id) }}?change=1" class="quantity-button-home">
-        <i class="fa-solid fa-plus"></i>
-      </a>
+        <a href="javascript:void(0);" onclick="updateQuantity(this, -1)" class="quantity-button-home">
+            <i class="fa-solid fa-minus"></i>
+        </a>
+        <p class="quantity-value">{{ product.quantity }}</p>
+        <a href="javascript:void(0);" onclick="updateQuantity(this, 1)" class="quantity-button-home">
+            <i class="fa-solid fa-plus"></i>
+        </a>
     </div>
     {% else %}
-    <div class="add-btn">
-      <a href="#" class="add-button" onclick="addToCart('{{ product._id }}', this)">
-        Add
-        <i class="fa-solid fa-plus"></i>
-      </a>
+    <div class="add-btn" style="display: block;">
+        <a href="javascript:void(0);" class="add-button" onclick="addToCart('{{ product._id }}', this)">
+            Add
+            <i class="fa-solid fa-plus"></i>
+        </a>
     </div>
     {% endif %}
+    <div class="add-btn" style="display: none;">
+      <a href="javascript:void(0);" class="add-button" onclick="addToCart('{{ product._id }}', this)">
+          Add
+          <i class="fa-solid fa-plus"></i>
+      </a>
+  </div>
 
   </div>
   {% endfor %}
@@ -51,7 +57,6 @@
 
 <script>
   document.addEventListener('DOMContentLoaded', function () {
-
     const searchInput = document.getElementById('myInput');
     const productItems = document.querySelectorAll('.product-item');
     const notFoundMessage = document.getElementById('notFoundMessage');
@@ -71,18 +76,10 @@
         }
       });
 
-
-      if (!productFound) {
-        notFoundMessage.style.display = 'block';
-      } else {
-        notFoundMessage.style.display = 'none';
-      }
+      notFoundMessage.style.display = productFound ? 'none' : 'block';
     });
-
   });
-</script>
 
-<script>
   function addToCart(productId, element) {
     fetch(`/update_cart_quantity/${productId}?change=1`)
       .then(response => {
@@ -93,26 +90,38 @@
   }
 
   function updateQuantity(element, change) {
-    const productId = element.closest('.product-item').getAttribute('data-product-id');
+    const productItem = element.closest('.product-item');
+    const productId = productItem.getAttribute('data-product-id');
+    
     fetch(`/update_cart_quantity/${productId}?change=${change}`)
-      .then(response => {
-        if (response.ok) {
-          window.location.reload();
-        }
-      });
-  }
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          const quantityContainer = productItem.querySelector('.quantity-container-home');
+          const addButton = productItem.querySelector('.add-btn');
+          const quantityValue = productItem.querySelector('.quantity-value');
 
-  function removeFromCart(element) {
-    const productId = element.closest('.product-item').getAttribute('data-product-id');
-    fetch(`/update_cart_quantity/${productId}?change=-1`)
-      .then(response => {
-        if (response.ok) {
-          window.location.reload();
+          if (quantityContainer && quantityValue) {
+            if (data.quantity === 0 || data.removed) {
+              quantityContainer.style.display = 'none';
+              if (addButton) {
+                addButton.style.display = 'block';
+              }
+            } else {
+              quantityValue.textContent = data.quantity;
+              quantityContainer.style.display = 'flex';
+              if (addButton) {
+                addButton.style.display = 'none';
+              }
+            }
+          }
         }
-      });
+      })
+      .catch(error => console.error('Error:', error));
   }
-
 </script>
+
+
 
 
 
