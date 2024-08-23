@@ -27,28 +27,28 @@
 
     {% if product.in_cart %}
     <div class="quantity-container-home">
-        <a href="javascript:void(0);" onclick="updateQuantity(this, -1)" class="quantity-button-home">
-            <i class="fa-solid fa-minus"></i>
-        </a>
-        <p class="quantity-value">{{ product.quantity }}</p>
-        <a href="javascript:void(0);" onclick="updateQuantity(this, 1)" class="quantity-button-home">
-            <i class="fa-solid fa-plus"></i>
-        </a>
+      <a href="javascript:void(0);" onclick="updateQuantity(this, -1)" class="quantity-button-home">
+        <i class="fa-solid fa-minus"></i>
+      </a>
+      <p class="quantity-value">{{ product.quantity }}</p>
+      <a href="javascript:void(0);" onclick="updateQuantity(this, 1)" class="quantity-button-home">
+        <i class="fa-solid fa-plus"></i>
+      </a>
     </div>
     {% else %}
     <div class="add-btn" style="display: block;">
-        <a href="javascript:void(0);" class="add-button" onclick="addToCart('{{ product._id }}', this)">
-            Add
-            <i class="fa-solid fa-plus"></i>
-        </a>
+      <a href="javascript:void(0);" class="add-button" onclick="addToCart('{{ product._id }}', this)">
+        Add
+        <i class="fa-solid fa-plus"></i>
+      </a>
     </div>
     {% endif %}
     <div class="add-btn" style="display: none;">
       <a href="javascript:void(0);" class="add-button" onclick="addToCart('{{ product._id }}', this)">
-          Add
-          <i class="fa-solid fa-plus"></i>
+        Add
+        <i class="fa-solid fa-plus"></i>
       </a>
-  </div>
+    </div>
 
   </div>
   {% endfor %}
@@ -92,7 +92,7 @@
   function updateQuantity(element, change) {
     const productItem = element.closest('.product-item');
     const productId = productItem.getAttribute('data-product-id');
-    
+
     fetch(`/update_cart_quantity/${productId}?change=${change}`)
       .then(response => response.json())
       .then(data => {
@@ -120,9 +120,5 @@
       .catch(error => console.error('Error:', error));
   }
 </script>
-
-
-
-
 
 {% endblock %}

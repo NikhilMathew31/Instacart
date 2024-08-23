@@ -91,25 +91,25 @@
 <p>Your cart is empty.</p>
 {% endif %}
 
-<script>  
-  function updateQuantity(element, change) {
+<script>
+    function updateQuantity(element, change) {
 
-    const productItem = element.closest('.cart-item');
-    
-    if (productItem) {
-      const productId = productItem.getAttribute('data-product-id');
+        const productItem = element.closest('.cart-item');
 
-      fetch(`/update_cart_quantity/${productId}?change=${change}`)
-        .then(response => {
-          if (response.ok) {
-            window.location.reload();
-          }
-        })
-        .catch(error => console.error('Error:', error));
-    } else {
-      console.error('Product item not found');
+        if (productItem) {
+            const productId = productItem.getAttribute('data-product-id');
+
+            fetch(`/update_cart_quantity/${productId}?change=${change}`)
+                .then(response => {
+                    if (response.ok) {
+                        window.location.reload();
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+        } else {
+            console.error('Product item not found');
+        }
     }
-  }
 </script>
 
 {% endblock %}

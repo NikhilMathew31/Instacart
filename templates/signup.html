@@ -12,7 +12,6 @@
     <link href="static/css/style.css" rel="stylesheet">
 
     <style>
-
         a {
             color: darkred;
             font-weight: 600;
@@ -48,7 +47,7 @@
     {% for category, message in get_flashed_messages(with_categories=True) %}
     <div class="alert alert-{{category}}">{{ message }}</div>
     {% endfor %}
-    
+
 </body>
 
 </html>
