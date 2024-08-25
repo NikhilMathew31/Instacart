@@ -2,10 +2,12 @@ from flask import Flask, jsonify, render_template, redirect, session, url_for, r
 from flask_pymongo import PyMongo
 from bson.objectid import ObjectId
 import bcrypt
+from pymongo import MongoClient
 
 app = Flask(__name__)
-app.config['MONGO_URI'] = "mongodb://localhost:27017/instant_mart_db"
-mongo = PyMongo(app)
+client = MongoClient("mongodb+srv://mathewnikhil:12345@cluster0.7jznu.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
+db = client['instant_mart_db']
+# mongo = PyMongo(app)
 
 app.secret_key = 'instant_mart_key'
 
@@ -13,7 +15,7 @@ app.secret_key = 'instant_mart_key'
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        users = mongo.db.users
+        users = db.users
         user = users.find_one({'email': request.form['email']})
 
         if user and bcrypt.checkpw(request.form['password'].encode('utf-8'), user['password']):
@@ -29,7 +31,7 @@ def login():
 @app.route("/signup", methods=['POST', 'GET'])
 def signup():
     if request.method == 'POST':
-        users = mongo.db.users
+        users = db.users
         existing_user = users.find_one({'email': request.form['email']})
         password = request.form['password']
         repassword = request.form['repassword']
@@ -55,13 +57,13 @@ def signup():
 @app.route('/home')
 def home():
     if 'email' in session:
-        cart_items = mongo.db.carts.find({'user_id': session['email']})
+        cart_items = db.carts.find({'user_id': session['email']})
         cart_dict = {str(item['product_id']): item['quantity'] for item in cart_items}
-        cart_count = mongo.db.carts.count_documents({'user_id': session['email']})
+        cart_count = db.carts.count_documents({'user_id': session['email']})
     else:
         cart_dict = {}
 
-    products = mongo.db.products.find()
+    products = db.products.find()
     product_list = []
 
     for product in products:
@@ -84,21 +86,21 @@ def update_cart_quantity(product_id):
 
     change = int(request.args.get('change', 1))
     
-    cart = mongo.db.carts.find_one({'user_id': session['email'], 'product_id': ObjectId(product_id)})
+    cart = db.carts.find_one({'user_id': session['email'], 'product_id': ObjectId(product_id)})
     if cart:
         new_quantity = cart['quantity'] + change
         if new_quantity > 0:
-            mongo.db.carts.update_one({'_id': cart['_id']}, {'$set': {'quantity': new_quantity}})
+            db.carts.update_one({'_id': cart['_id']}, {'$set': {'quantity': new_quantity}})
             return jsonify({'success': True, 'quantity': new_quantity}), 200
         
         else:
-            mongo.db.carts.delete_one({'_id': cart['_id']})
+            db.carts.delete_one({'_id': cart['_id']})
             flash('Product removed from cart.', 'error')
             return jsonify({'success': True, 'quantity': 0, 'removed': True}), 200
         
     else:
         if change > 0:
-            mongo.db.carts.insert_one({
+            db.carts.insert_one({
                 'user_id': session['email'],
                 'product_id': ObjectId(product_id),
                 'quantity': change
@@ -114,15 +116,15 @@ def cart():
         flash('Please log in to view your cart.','error')
         return redirect(url_for('login'))
 
-    cart_count = mongo.db.carts.count_documents({'user_id': session['email']})
-    cart_items = mongo.db.carts.find({'user_id': session['email']})
+    cart_count = db.carts.count_documents({'user_id': session['email']})
+    cart_items = db.carts.find({'user_id': session['email']})
     products = []
     total_price = 0
     hand_fee = 5
     del_fee = 16
     pay_amt = 0
     for item in cart_items:
-        product = mongo.db.products.find_one({'_id': item['product_id']})
+        product = db.products.find_one({'_id': item['product_id']})
         if product:
             product['quantity'] = item['quantity']
             product['total'] = product['price'] * item['quantity']
@@ -141,13 +143,13 @@ def place_order():
         flash('Please log in to place an order.')
         return redirect(url_for('login'))
 
-    cart_count = mongo.db.carts.count_documents({'user_id': session['email']})
+    cart_count = db.carts.count_documents({'user_id': session['email']})
 
     if cart_count == 0:
         flash('Your cart is empty!')
         return redirect(url_for('home'))
 
-    cart_items = mongo.db.carts.find({'user_id': session['email']})
+    cart_items = db.carts.find({'user_id': session['email']})
     
     total_price = 0
     hand_fee = 5
@@ -156,7 +158,7 @@ def place_order():
     order_items = []
     
     for item in cart_items:
-        product = mongo.db.products.find_one({'_id': item['product_id']})
+        product = db.products.find_one({'_id': item['product_id']})
         if product:
             item_total = product['price'] * item['quantity']
             total_price += item_total
@@ -175,8 +177,8 @@ def place_order():
         'order_status': 'Success'
     }
 
-    mongo.db.orders.insert_one(order)
-    mongo.db.carts.delete_many({'user_id': session['email']})
+    db.orders.insert_one(order)
+    db.carts.delete_many({'user_id': session['email']})
     flash('Order placed successfully!', 'info')
 
     return redirect(url_for('home'))
